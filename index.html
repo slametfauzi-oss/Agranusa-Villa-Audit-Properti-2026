@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Aset Property - Agranusa Villa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js & Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Mammoth (Word DOCX Import) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#F8FAFC',
+                            100: '#F1F5F9',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                            950: '#020617',
+                        },
+                        accent: {
+                            gold: '#D4AF37',
+                            goldLight: '#F3E5AB',
+                            emerald: '#059669',
+                            rose: '#E11D48',
+                            amber: '#D97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style id="custom-font-style">
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            color: #334155;
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        .bg-clean-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .bg-clean-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+        }
+
+        .sidebar-item-active {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #D4AF37;
+        }
+
+        .financial-val {
+            white-space: nowrap !important;
+            word-break: keep-all !important;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hide-financial .financial-field { display: none !important; }
+        .hide-spec .spec-field { display: none !important; }
+        .hide-status .status-field { display: none !important; }
+        .hide-conclusion #view-conclusion { display: none !important; }
+
+        [contenteditable="true"]:hover {
+            outline: 1px dashed #D97706 !important;
+            background-color: rgba(254, 243, 199, 0.3) !important;
+            border-radius: 4px;
+        }
+
+        /* PRINT & DOWNLOAD PDF STYLES */
+        @media print {
+            .no-print, header, aside, .modal-box { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            body { background-color: #FFFFFF !important; color: #000000 !important; font-size: 11px !important; }
+            .bg-clean-card { 
+                background: #FFFFFF !important; 
+                color: #000000 !important; 
+                border: 1px solid #CBD5E1 !important; 
+                box-shadow: none !important;
+                margin-bottom: 12px !important;
+            }
+            th { background-color: #F1F5F9 !important; color: #0F172A !important; border-bottom: 2px solid #64748B !important; font-size: 10px !important; }
+            td { color: #1E293B !important; border-bottom: 1px solid #E2E8F0 !important; padding: 6px 8px !important; font-size: 10.5px !important; }
+            tr { page-break-inside: avoid !important; }
+            .chart-box-container { height: 240px !important; }
+            
+            body.print-all-mode #view-summary,
+            body.print-all-mode #view-conclusion,
+            body.print-all-mode #view-unit,
+            body.print-all-mode #all-units-pdf-container {
+                display: block !important;
+            }
+            .unit-page-break {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex text-slate-700 antialiased">
+
+    <!-- SIDEBAR NAV -->
+    <aside class="sidebar w-72 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-30 shadow-xl no-print text-slate-300">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+            <div class="flex items-center gap-3">
+                <div id="logo-container" class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-black text-xl shadow-md overflow-hidden relative border border-amber-300/40">
+                    <img id="app-logo" src="" class="w-full h-full object-cover hidden" alt="Logo">
+                    <span id="app-logo-icon"><i class="fa-solid fa-hotel"></i></span>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-sm text-slate-100 tracking-wide leading-none uppercase outline-none hover:bg-slate-800 p-0.5 rounded transition cursor-pointer" id="sidebar-main-title" contenteditable="true" title="Klik untuk edit Nama Aplikasi">Audit Aset</h1>
+                    <span class="text-xs font-medium text-amber-400 tracking-wide outline-none hover:bg-slate-800 p-0.5 rounded transition cursor-pointer" id="hotel-name-display" contenteditable="true" title="Klik untuk edit Nama Properti">Agranusa Villa</span>
+                </div>
+            </div>
+            <label for="logo-upload" class="cursor-pointer text-slate-400 hover:text-amber-300 transition text-xs p-2 rounded-xl hover:bg-slate-800 border border-slate-700" title="Ganti Logo">
+                <i class="fa-solid fa-camera"></i>
+                <input type="file" id="logo-upload" accept="image/*" class="hidden" onchange="changeLogo(event)">
+            </label>
+        </div>
+
+        <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
+            <span class="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Navigasi Utama</span>
+            <button onclick="openAddUnitModal()" class="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 hover:underline text-[11px]">
+                <i class="fa-solid fa-plus text-[10px]"></i> Tambah Unit
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1" id="sidebar-menu">
+            <button onclick="switchTab('summary')" id="nav-summary" class="sidebar-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition sidebar-item-active">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-chart-pie w-4 text-center text-amber-500"></i>
+                    <span>Summary Dashboard</span>
+                </div>
+                <span class="text-[11px] bg-slate-100 text-slate-900 font-bold px-2 py-0.5 rounded-full" id="total-all-badge">0</span>
+            </button>
+
+            <button onclick="switchTab('conclusion')" id="nav-conclusion" class="sidebar-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-clipboard-check w-4 text-center text-emerald-400"></i>
+                    <span>Kesimpulan & Stakeholder</span>
+                </div>
+                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold px-2 py-0.5 rounded-full">LIVE</span>
+            </button>
+
+            <div class="pt-3 pb-1 px-3 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <span>Daftar Unit Property</span>
+                <div class="h-px bg-slate-800 flex-1"></div>
+            </div>
+            <div id="unit-menu-list" class="space-y-1"></div>
+        </div>
+
+        <div class="p-3 border-t border-slate-800 text-xs text-slate-400 flex flex-col gap-2 bg-slate-950">
+            <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-[9px] text-amber-400 uppercase font-bold tracking-widest">Auditor / Pemeriksa</div>
+                <div class="font-bold text-slate-200 mt-0.5 text-xs outline-none hover:bg-slate-800 p-0.5 rounded cursor-pointer hover:text-amber-300 transition" id="auditor-name-sidebar" contenteditable="true" title="Klik untuk edit Nama Auditor">I Made Wijaya, S.T.</div>
+                <div class="text-[11px] text-slate-400 outline-none hover:bg-slate-800 p-0.5 rounded cursor-pointer hover:text-slate-200 transition" id="auditor-role-sidebar" contenteditable="true" title="Klik untuk edit Jabatan">Chief Engineering</div>
+            </div>
+            <div class="flex justify-between items-center text-slate-400 font-medium pt-0.5 text-[11px]">
+                <span>Total QTY Aset Actual</span>
+                <span id="footer-total-items" class="font-bold text-amber-400">0</span>
+            </div>
+            <div class="text-[10px] text-slate-500 text-center">Chief Engineering Dept &copy; 2026</div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content flex-1 ml-72 flex flex-col min-h-screen bg-slate-50">
+        <!-- TOP TOOLBAR -->
+        <header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex flex-wrap items-center justify-between gap-4 z-20 no-print shadow-sm">
+            <div class="flex items-center gap-2 flex-wrap">
+                <button id="undo-btn" onclick="undo()" disabled class="px-3 py-1.5 text-slate-600 hover:text-slate-900 disabled:opacity-40 border border-slate-200 bg-white hover:bg-slate-50 rounded-lg text-xs font-medium transition" title="Undo (Ctrl+Z)">
+                    <i class="fa-solid fa-rotate-left"></i> Undo
+                </button>
+                <button id="redo-btn" onclick="redo()" disabled class="px-3 py-1.5 text-slate-600 hover:text-slate-900 disabled:opacity-40 border border-slate-200 bg-white hover:bg-slate-50 rounded-lg text-xs font-medium transition" title="Redo (Ctrl+Y)">
+                    <i class="fa-solid fa-rotate-right"></i> Redo
+                </button>
+                <div class="h-4 w-px bg-slate-200 mx-1"></div>
+                <button onclick="restoreOriginalExcelData()" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200" title="Reset data awal">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reset Data
+                </button>
+                
+                <button onclick="toggleFinancials()" id="toggle-finance-btn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200">
+                    <i class="fa-solid fa-eye-slash" id="finance-icon"></i>
+                    <span id="finance-btn-text">Sembunyikan Biaya</span>
+                </button>
+
+                <button onclick="toggleSpecColumn()" id="toggle-spec-btn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200">
+                    <i class="fa-solid fa-tag" id="spec-icon"></i>
+                    <span id="spec-btn-text">Sembunyikan Merek/Spesifikasi</span>
+                </button>
+
+                <button onclick="toggleStatusColumn()" id="toggle-status-btn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200">
+                    <i class="fa-solid fa-toggle-on" id="status-icon"></i>
+                    <span id="status-btn-text">Sembunyikan Status</span>
+                </button>
+
+                <button onclick="toggleConclusionSection()" id="toggle-conclusion-btn" class="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200">
+                    <i class="fa-solid fa-file-contract" id="conclusion-icon"></i>
+                    <span id="conclusion-btn-text">Sembunyikan Analisis</span>
+                </button>
+            </div>
+
+            <div class="flex items-center flex-wrap gap-2">
+                <button onclick="saveData()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Data
+                </button>
+                <div class="relative group">
+                    <button class="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                        <i class="fa-solid fa-file-import text-slate-500"></i> Import Data <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                    <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 hidden group-hover:block z-50">
+                        <label for="import-excel" class="px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2 cursor-pointer font-medium">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i> Import Excel (.xlsx)
+                            <input type="file" id="import-excel" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
+                        </label>
+                        <label for="import-word" class="px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 cursor-pointer font-medium">
+                            <i class="fa-solid fa-file-word text-blue-600"></i> Import Word (.docx)
+                            <input type="file" id="import-word" accept=".docx" class="hidden" onchange="importWord(event)">
+                        </label>
+                    </div>
+                </div>
+                <button onclick="exportToExcel()" class="px-3.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-200">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel
+                </button>
+                <button onclick="executePDFDownloadDirect()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md transition">
+                    <i class="fa-solid fa-file-pdf text-amber-400"></i> Download PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="p-6 md:p-8 flex-1" id="printable-area">
+            <!-- HEADER LAPORAN EXECUTIVE -->
+            <div class="mb-6 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-6 printable-header-frame">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-extrabold text-amber-600 uppercase tracking-widest outline-none hover:bg-slate-100 p-1 rounded transition cursor-pointer" id="header-report-title" contenteditable="true">Laporan Official Chief Engineering</span>
+                        <i class="fa-solid fa-pen text-[10px] text-slate-400 no-print"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 mt-1">
+                        <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight outline-none hover:bg-slate-100 p-1 rounded transition cursor-pointer" id="page-title" contenteditable="true">Audit Aset Property - Agranusa</h2>
+                        <i class="fa-solid fa-pen-to-square text-sm text-slate-400 no-print"></i>
+                    </div>
+
+                    <p class="text-xs text-slate-500 mt-1" id="page-subtitle">Ringkasan kondisi, jumlah, status, dan biaya perawatan seluruh fasilitas properti.</p>
+                </div>
+                
+                <div class="flex items-center gap-6 border-l border-slate-200 pl-6">
+                    <div class="text-right">
+                        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">Pemeriksa / Auditor</span>
+                        <div class="text-sm font-extrabold text-slate-800 outline-none hover:bg-slate-100 p-0.5 rounded cursor-pointer transition" id="auditor-name-header" contenteditable="true">I Made Wijaya, S.T.</div>
+                        <div class="text-xs text-amber-600 font-medium outline-none hover:bg-slate-100 p-0.5 rounded cursor-pointer transition" id="auditor-role-header" contenteditable="true">Chief Engineering</div>
+                    </div>
+                    <div class="text-right border-l border-slate-200 pl-6">
+                        <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">Tanggal Audit</span>
+                        <span class="text-sm font-extrabold text-slate-800 outline-none hover:bg-slate-100 p-0.5 rounded transition cursor-pointer" id="audit-date-display" contenteditable="true">Agustus 2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL KONTROL TOOLKIT -->
+            <div class="mb-6 bg-white p-3.5 rounded-xl flex flex-wrap items-center justify-between gap-4 no-print border border-slate-200 shadow-sm">
+                <div class="flex items-center gap-5 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-slate-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-700">Tinggi Grafik:</span>
+                        <input type="range" id="chart-height-slider" min="200" max="500" value="320" oninput="adjustChartHeight(this.value)" class="w-24 accent-slate-800 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                        <span id="chart-height-val" class="text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">320px</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 border-l border-slate-200 pl-4">
+                        <i class="fa-solid fa-text-height text-slate-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-700">Ukuran Font:</span>
+                        <input type="range" id="font-size-slider" min="11" max="16" value="13.5" step="0.5" oninput="changeFontSize(this.value)" class="w-24 accent-slate-800 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                        <span id="font-size-val" class="text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">13.5px</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 border-l border-slate-200 pl-4">
+                        <i class="fa-solid fa-font text-slate-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-700">Jenis Font:</span>
+                        <select onchange="changeFontFamily(this.value)" class="bg-slate-50 text-slate-700 border border-slate-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400">
+                            <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                            <option value="'Inter', sans-serif">Inter</option>
+                            <option value="'Poppins', sans-serif">Poppins</option>
+                            <option value="'Roboto', sans-serif">Roboto</option>
+                            <option value="Arial, sans-serif">Arial Standard</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 border-l border-slate-200 pl-4">
+                        <i class="fa-solid fa-palette text-slate-500 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-700">Warna Biaya:</span>
+                        <input type="color" value="#059669" onchange="changeCostColor(this.value)" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0">
+                    </div>
+                </div>
+
+                <button onclick="resetTypography()" class="text-xs text-slate-500 hover:text-slate-800 font-semibold underline ml-auto">Reset Tampilan</button>
+            </div>
+
+            <!-- VIEW 1: SUMMARY DASHBOARD -->
+            <div id="view-summary" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-clean-card p-5 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total QTY Actual</span>
+                            <h3 class="text-2xl md:text-3xl font-black text-slate-900 mt-1" id="summary-total-items">0 Unit</h3>
+                            <span class="text-[11px] text-slate-500 mt-0.5 block" id="summary-total-item-types">0 Jenis Item</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    </div>
+                    <div class="bg-clean-card p-5 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Prioritas Urgent</span>
+                            <h3 class="text-2xl md:text-3xl font-black text-rose-600 mt-1" id="summary-urgent-count">0</h3>
+                            <span class="text-[11px] text-rose-500 font-semibold mt-0.5 block" id="summary-urgent-pct">0% dari total</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="bg-clean-card p-5 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Kondisi Rusak</span>
+                            <h3 class="text-2xl md:text-3xl font-black text-amber-600 mt-1" id="summary-rusak-count">0</h3>
+                            <span class="text-[11px] text-slate-500 mt-0.5 block">Butuh perbaikan</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl"><i class="fa-solid fa-wrench"></i></div>
+                    </div>
+                    <div class="bg-clean-card p-5 flex items-center justify-between financial-field">
+                        <div>
+                            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Estimasi Total Biaya</span>
+                            <h3 class="text-lg md:text-xl font-black text-emerald-600 mt-1 financial-val" id="summary-total-cost">Rp 0</h3>
+                            <span class="text-[10px] text-slate-500 mt-0.5 block truncate max-w-[160px]" id="summary-capex-opex-ratio">Capex / Opex</span>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div class="bg-clean-card p-5 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span> Total QTY Actual Aset per Unit Property
+                            </h3>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold border border-slate-200">Distribusi Unit</span>
+                        </div>
+                        <div class="chart-box-container h-[320px] relative w-full flex-1" id="box-chart-1"><canvas id="chart-unit-distribution"></canvas></div>
+                    </div>
+                    <div class="bg-clean-card p-5 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span> Proporsi Matriks Prioritas Aset
+                            </h3>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-semibold border border-slate-200">Status Prioritas</span>
+                        </div>
+                        <div class="chart-box-container h-[320px] relative w-full flex items-center justify-center flex-1" id="box-chart-2"><canvas id="chart-condition-pie"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-clean-card p-5 financial-field">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Alokasi Biaya (CAPEX vs OPEX) per Unit Properti
+                        </h3>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-semibold">Estimasi Anggaran</span>
+                    </div>
+                    <div class="chart-box-container h-[320px] relative w-full" id="box-chart-3"><canvas id="chart-cost-allocation"></canvas></div>
+                </div>
+
+                <div class="bg-clean-card overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+                        <h3 class="font-bold text-slate-800 text-sm">Ringkasan Audit per Unit Property</h3>
+                        <span class="text-xs text-slate-500">Pilih unit untuk melihat rincian detail aset</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase text-[10.5px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-4 min-w-[160px]">Nama Unit</th>
+                                    <th class="py-3 px-3 text-center w-28">Jumlah QTY Actual</th>
+                                    <th class="py-3 px-3 text-center w-28">Bagus / Berfungsi</th>
+                                    <th class="py-3 px-3 text-center w-28">Rusak / Repair</th>
+                                    <th class="py-3 px-3 text-center w-32">Status Urgent</th>
+                                    <th class="py-3 px-4 text-right min-w-[140px] financial-field">Estimasi Biaya</th>
+                                    <th class="py-3 px-3 text-center w-24 no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: KESIMPULAN & ANALISIS STAKEHOLDER -->
+            <div id="view-conclusion" class="hidden space-y-6 unit-page-break">
+                <div class="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white rounded-2xl shadow-xl border-l-8 border-amber-500 flex flex-wrap items-center justify-between gap-6">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-award"></i> Executive Report Summary
+                        </div>
+                        <h3 class="text-2xl font-black text-white tracking-wide outline-none hover:bg-slate-800/60 p-1 rounded transition" contenteditable="true">Ringkasan Kesimpulan & Analisis Stakeholder</h3>
+                        <p class="text-xs text-slate-300 mt-1 max-w-2xl outline-none hover:bg-slate-800/60 p-1 rounded transition" contenteditable="true">Hasil kalkulasi otomatis komprehensif data audit fisik aset Agranusa Villa beserta evaluasi kebutuhan 6 sudut pandang operasional manajemen.</p>
+                    </div>
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/80 text-center min-w-[160px]">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-widest">Asset Health Score</span>
+                        <span class="text-3xl font-black text-emerald-400 mt-0.5 block" id="conclusion-health-score">0%</span>
+                        <span class="text-[10px] text-amber-300 font-semibold" id="conclusion-health-category">Kategori: Loading...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Populasi Aset Physical</span>
+                        <div class="text-2xl font-black text-slate-800 mt-1" id="conclusion-total-qty">0 Unit</div>
+                        <span class="text-xs text-slate-500 mt-0.5 block" id="conclusion-total-types">0 Jenis Peralatan Lengkap</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-rose-200 bg-rose-50/20 shadow-sm">
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest block">Kondisi Rusak / Urgent</span>
+                        <div class="text-2xl font-black text-rose-600 mt-1" id="conclusion-rusak-urgent">0 Unit (0%)</div>
+                        <span class="text-xs text-rose-500 font-medium mt-0.5 block" id="conclusion-rusak-note">Membutuhkan Tindakan Penanganan</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-emerald-200 bg-emerald-50/20 shadow-sm financial-field">
+                        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">Kebutuhan Anggaran CAPEX</span>
+                        <div class="text-xl font-black text-emerald-600 mt-1 financial-val" id="conclusion-capex-cost">Rp 0</div>
+                        <span class="text-xs text-emerald-700 font-medium mt-0.5 block" id="conclusion-capex-pct">0% Kebutuhan Penggantian</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm financial-field">
+                        <span class="text-[10px] font-bold text-amber-600 uppercase tracking-widest block">Kebutuhan Anggaran OPEX</span>
+                        <div class="text-xl font-black text-amber-600 mt-1 financial-val" id="conclusion-opex-cost">Rp 0</div>
+                        <span class="text-xs text-amber-700 font-medium mt-0.5 block" id="conclusion-opex-pct">0% Servis & Maintenance</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+                        <h4 class="font-bold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-users text-amber-400"></i> Matriks Analisis Sudut Pandang (Stakeholder Perspective)
+                        </h4>
+                        <span class="text-xs text-slate-400"><i class="fa-solid fa-pen text-[10px]"></i> Klik teks di bawah untuk mengedit</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-4 w-40">Perspektif / Stakeholder</th>
+                                    <th class="py-3 px-4">Kebutuhan Utama</th>
+                                    <th class="py-3 px-4">Analisis Kelebihan Sistem</th>
+                                    <th class="py-3 px-4">Kekurangan & Solusi Perbaikan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">🏢 Owner (Pemilik)</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">ROI, Beban Capex/Opex, Nilai Aset.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Visualisasi biaya transparan, ada opsi hide/show financial.</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Belum ada fitur depresiasi/penyusutan buku & tombol approval persetujuan anggaran.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">🏛️ Corporate Management</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">Standardisasi audit & multi-property tracking.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Dukungan import/export Excel serta cetak laporan PDF eksekutif.</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Sistem masih bertipe single-property & belum ada log histori pengeditan user.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">👨‍🔧 Chief Engineer</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">Akurasi teknis & skala prioritas perbaikan.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Matriks prioritas lengkap (Red, Yellow, Green, Brown, Blue).</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Belum ada data umur teknis/tanggal beli awal peralatan untuk estimasi overhaul.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">📑 Admin Engineering</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">Kemudahan input masal & ketahanan data.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Fitur modal responsif & ketersediaan Undo/Redo (Ctrl+Z/Ctrl+Y).</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Data tersimpan di Browser LocalStorage. Perlu fitur backup database online.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">👷‍♂️ SPV Engineering</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">Work Order (WO) & pengawasan teknisi.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Action plan spesifik (Replace, Overhaul, Service) terstruktur.</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Belum ada kolom penunjukan teknisi (Assignee) & target tanggal penyelesaian (Deadline).</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-bold text-slate-900 bg-slate-50 outline-none" contenteditable="true">🔧 Staff Engineering</td>
+                                    <td class="py-3 px-4 outline-none" contenteditable="true">Kemudahan inspeksi lapangan & bukti foto.</td>
+                                    <td class="py-3 px-4 text-emerald-700 font-medium outline-none" contenteditable="true">Desain Tailwind mobile-friendly & pencarian barang cepat.</td>
+                                    <td class="py-3 px-4 text-rose-700 font-medium outline-none" contenteditable="true">Belum ada fitur upload foto bukti fisik kondisi aset rusak (Before/After).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i> Rekomendasi Strategis Utama (Corporate & Owner)
+                        </h4>
+                        <ul class="space-y-2 text-xs text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 shrink-0"></i>
+                                <span class="outline-none" contenteditable="true"><strong id="rec-capex-text">Pencairan CAPEX Prioritas Utama:</strong> Segera alokasikan penggantian unit kritis untuk mencegah kamar *Out of Order* (OOO).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 shrink-0"></i>
+                                <span class="outline-none" contenteditable="true"><strong>Proteksi Nilai Aset:</strong> Terapkan sistem *Preventive Maintenance* berbasis jadwal harian untuk mengamankan aset yang berfungsi baik.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-gears text-blue-500"></i> Tindakan Operasional Tim Engineering
+                        </h4>
+                        <ul class="space-y-2 text-xs text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-wrench text-blue-500 mt-0.5 shrink-0"></i>
+                                <span class="outline-none" contenteditable="true"><strong>Manajemen Vendor & Spareparts:</strong> Lakukan koordinasi vendor garansi untuk menekan alokasi Opex operasional.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-wrench text-blue-500 mt-0.5 shrink-0"></i>
+                                <span class="outline-none" contenteditable="true"><strong>Pemberkasan Digital:</strong> Ekspor laporan ini ke Excel secara berkala sebagai backup berkas audit fisik.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: UNIT DETAIL VIEW (SINGLE TAB MODE) -->
+            <div id="view-unit" class="hidden space-y-5 unit-page-break">
+                <div class="p-4 bg-slate-900 text-white rounded-xl flex items-center justify-between shadow-md border-l-4 border-amber-500">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-folder-open text-amber-400 text-xl"></i>
+                        <div>
+                            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-widest block">Detail Audit Unit / Kategori:</span>
+                            <h3 class="text-xl font-black text-white tracking-wide uppercase" id="current-unit-heading-title">Unit Name</h3>
+                        </div>
+                    </div>
+                    <span class="text-xs bg-slate-800 border border-slate-700 text-slate-300 font-semibold px-3 py-1 rounded-lg">Property Audit Unit</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-clean-card p-4">
+                        <span class="text-xs font-medium text-slate-500">Total QTY Actual Unit Ini</span>
+                        <div class="text-xl font-bold text-slate-900 mt-0.5" id="unit-total-qty">0 Unit</div>
+                    </div>
+                    <div class="bg-clean-card p-4">
+                        <span class="text-xs font-medium text-slate-500">Kondisi Bagus / Rusak (QTY)</span>
+                        <div class="text-xl font-bold text-slate-900 mt-0.5" id="unit-condition-ratio">0 / 0</div>
+                    </div>
+                    <div class="bg-clean-card p-4">
+                        <span class="text-xs font-medium text-slate-500">Status Prioritas Urgent</span>
+                        <div class="text-xl font-bold text-rose-600 mt-0.5" id="unit-urgent-count">0 Urgent</div>
+                    </div>
+                    <div class="bg-clean-card p-4 financial-field">
+                        <span class="text-xs font-medium text-slate-500">Estimasi Biaya (Capex/Opex)</span>
+                        <div class="text-xl font-bold text-emerald-600 mt-0.5 financial-val" id="unit-total-cost">Rp 0</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <div class="bg-clean-card p-4 flex flex-col">
+                        <h4 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-pie text-amber-500"></i> Matriks Prioritas Unit Ini
+                        </h4>
+                        <div class="chart-box-container h-[260px] relative w-full flex-1" id="box-mini-chart-1"><canvas id="unit-priority-chart"></canvas></div>
+                    </div>
+
+                    <div class="bg-clean-card p-4 flex flex-col">
+                        <h4 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-cubes-stacked text-blue-500"></i> Kondisi Peralatan (QTY Actual)
+                        </h4>
+                        <div class="chart-box-container h-[260px] relative w-full flex-1" id="box-mini-chart-2"><canvas id="unit-condition-chart"></canvas></div>
+                    </div>
+
+                    <div class="bg-clean-card p-4 flex flex-col financial-field">
+                        <h4 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wallet text-emerald-600"></i> Alokasi Budget (CAPEX vs OPEX)
+                        </h4>
+                        <div class="chart-box-container h-[260px] relative w-full flex-1" id="box-mini-chart-3"><canvas id="unit-budget-chart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-clean-card p-3.5 flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div class="flex items-center gap-3 flex-1 min-w-[240px]">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="search-input" oninput="renderCurrentUnitTable()" placeholder="Cari aset, merk, spesifikasi, action plan..." class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400">
+                        </div>
+                        <select id="filter-urgency" onchange="renderCurrentUnitTable()" class="py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none">
+                            <option value="ALL">Semua Matriks Prioritas</option>
+                            <option value="URGENT">🔴 MERAH: URGENT</option>
+                            <option value="IMPORTANT">🟡 KUNING: IMPORTANT</option>
+                            <option value="DONE">🟢 HIJAU: DONE</option>
+                            <option value="NOT URGENT, BUT IMPORTANT">🟤 COKLAT: NOT URGENT, BUT IMPORTANT</option>
+                            <option value="NOT URGENT, NOT IMPORTANT">🔵 BIRU: NOT URGENT, NOT IMPORTANT</option>
+                        </select>
+                        <select id="filter-condition" onchange="renderCurrentUnitTable()" class="py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none">
+                            <option value="ALL">Semua Kondisi</option>
+                            <option value="Bagus">Bagus / Berfungsi</option>
+                            <option value="Rusak">Rusak / Service</option>
+                        </select>
+                    </div>
+
+                    <button onclick="openAddItemModal()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-plus text-amber-400"></i> Tambah Item Aset
+                    </button>
+                </div>
+
+                <div class="bg-clean-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-3 px-2 w-10 text-center">No</th>
+                                    <th class="py-3 px-3 min-w-[150px]">Nama Aset / Equipment</th>
+                                    <th class="py-3 px-3 min-w-[180px] spec-field">Merek / Spesifikasi</th>
+                                    <th class="py-3 px-2 text-center w-16">QTY Actual</th>
+                                    <th class="py-3 px-2 text-center w-24">Kondisi</th>
+                                    <th class="py-3 px-2 text-center w-24 status-field">Status</th>
+                                    <th class="py-3 px-3 text-center min-w-[160px]">Matriks Prioritas</th>
+                                    <th class="py-3 px-3 min-w-[200px]">Rekomendasi / Action Plan</th>
+                                    <th class="py-3 px-3 text-right min-w-[120px] financial-field">Estimasi Biaya</th>
+                                    <th class="py-3 px-2 text-center w-20 financial-field">Alokasi</th>
+                                    <th class="py-3 px-2 text-center w-24">Tgl Audit</th>
+                                    <th class="py-3 px-2 text-center w-20 no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="unit-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTAINER DYNAMIC KHUSUS UNTUK MENAMPUNG SELURUH UNIT SAAT CETAK PDF -->
+            <div id="all-units-pdf-container" class="hidden space-y-8"></div>
+        </div>
+    </main>
+
+    <!-- MODAL: ADD / EDIT ITEM -->
+    <div id="modal-item" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm" id="modal-item-title">Tambah Item Aset</h3>
+                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="item-form" onsubmit="saveItemModal(event)" class="p-5 space-y-3.5">
+                <input type="hidden" id="form-item-index" value="-1">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Aset / Equipment</label>
+                    <input type="text" id="form-nama" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Merek / Identitas / Serial No</label>
+                    <input type="text" id="form-identitas" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-amber-700 mb-1">Rekomendasi / Action Plan (Tindakan Lanjut)</label>
+                    <div class="space-y-2">
+                        <select id="form-action-preset" onchange="applyActionPreset(this.value)" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="">-- Pilih Rekomendasi Cepat / Custom --</option>
+                            <option value="Penggantian Unit Baru (Replace - Capex)">🔴 Penggantian Unit Baru (Replace - Capex)</option>
+                            <option value="Perbaikan / Overhaul (Repair - Opex)">🟡 Perbaikan / Overhaul (Repair - Opex)</option>
+                            <option value="Servis Rutin & Maintenance">🟢 Servis Rutin & Maintenance</option>
+                            <option value="Pembersihan / Periodic Cleaning">🔵 Pembersihan / Periodic Cleaning</option>
+                            <option value="Follow up Vendor / Garansi">🟤 Follow up Vendor / Garansi</option>
+                            <option value="Monitoring Operasional Normal">✅ Monitoring Operasional Normal</option>
+                        </select>
+                        <input type="text" id="form-action" placeholder="Atau tulis instruksi action plan spesifik di sini..." class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah QTY Actual</label>
+                        <input type="number" id="form-qty" min="1" value="1" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kondisi</label>
+                        <select id="form-kondisi" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="Bagus">Bagus</option>
+                            <option value="Berfungsi">Berfungsi</option>
+                            <option value="Rusak">Rusak</option>
+                            <option value="Perlu Service">Perlu Service</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Status Penggunaan</label>
+                        <select id="form-status" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="Terpakai">Terpakai</option>
+                            <option value="Tidak Terpakai">Tidak Terpakai</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Matriks Prioritas</label>
+                        <select id="form-urgency" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="URGENT">🔴 MERAH: URGENT</option>
+                            <option value="IMPORTANT">🟡 KUNING: IMPORTANT</option>
+                            <option value="DONE">🟢 HIJAU: DONE</option>
+                            <option value="NOT URGENT, BUT IMPORTANT">🟤 COKLAT: NOT URGENT, BUT IMPORTANT</option>
+                            <option value="NOT URGENT, NOT IMPORTANT, Should be Follow Up">🔵 BIRU: NOT URGENT, NOT IMPORTANT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Estimasi Biaya Satuan (Rp)</label>
+                        <input type="number" id="form-biaya" min="0" value="0" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Alokasi Budget</label>
+                        <select id="form-alokasi" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                            <option value="OPEX">OPEX</option>
+                            <option value="CAPEX">CAPEX</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Audit</label>
+                    <input type="date" id="form-tanggal" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                </div>
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold">Simpan Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT UNIT -->
+    <div id="modal-unit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm" id="modal-unit-title">Tambah Unit Baru</h3>
+                <button onclick="closeUnitModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="unit-form" onsubmit="saveUnitModal(event)" class="p-5 space-y-4">
+                <input type="hidden" id="form-old-unit-name" value="">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Unit / Kategori Property</label>
+                    <input type="text" id="form-unit-name" required placeholder="Contoh: SPA & Wellness" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:ring-1 focus:ring-slate-400 focus:outline-none">
+                </div>
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeUnitModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold">Simpan Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC DENGAN AUTO PRINT & FITUR RENDER FULL PRINT ALL -->
+    <script>
+        Chart.register(ChartDataLabels);
+
+        function formatRupiahShort(value) {
+            if (value === 0 || value === null || value === undefined) return 'Rp 0';
+            return 'Rp ' + Number(value).toLocaleString('id-ID');
+        }
+
+        function calculateUnitTotalQty(items) {
+            if (!items || !Array.isArray(items)) return 0;
+            return items.reduce((total, item) => total + (parseInt(item.qty) || 1), 0);
+        }
+
+        function calculateAllUnitsTotalQty() {
+            let total = 0;
+            Object.keys(dataset).forEach(uName => {
+                total += calculateUnitTotalQty(dataset[uName]);
+            });
+            return total;
+        }
+
+        function generateInitialDataset() {
+            const unitsConfig = [
+                { 
+                    name: "Kitchen Equipment", 
+                    items: [
+                        { nama: "SKYRAINBOW Upright chiller", identitas: "Skyrainbow NPF-650 Chiller 2-Door Stainless (600L)" },
+                        { nama: "KDK Exhaust Fan", identitas: "KDK 30GSC Wall Exhaust Fan Heavy Duty 12 Inch" },
+                        { nama: "GEA Showcase", identitas: "GEA Display Cooler EXPO-1050AH/CN 3 Door" },
+                        { nama: "Digital Weight Scale", identitas: "Nankai Electronic Bench Scale 150kg Precision" },
+                        { nama: "KRIS Microwave", identitas: "Kris Digital Oven Microwave Commercial 23 Liter" },
+                        { nama: "HATCO Food heating counter", identitas: "Hatco GR2S-24 Glo-Ray Heated Display Warmer" },
+                        { nama: "KRIS Microwave", identitas: "Kris Standar Commercial Microwave 20L 800W" },
+                        { nama: "Electrolux Microwave", identitas: "Electrolux EMS3087X Combination Grill Microwave 30L" },
+                        { nama: "Blender Philips", identitas: "Philips HR2221/01 Series 5000 Commercial Jar 350W" },
+                        { nama: "Krisbow Insect killer", identitas: "Krisbow Bug Zapper UV Trap 2x20W Commercial" },
+                        { nama: "Griddle Gas", identitas: "Naya Gas Flat Top Griddle Tabletop Heavy Duty GT-718" },
+                        { nama: "Gas Burner", identitas: "Rinnai RI-2RSP Commercial Heavy Duty Double Ring Stove" },
+                        { nama: "Grease trap", identitas: "Custom Stainless Steel 304 Grease Interceptor Tank 50L" },
+                        { nama: "PANASONIC Water Pump", identitas: "Panasonic GP-200JXK Automatic Water Booster Pump" },
+                        { nama: "Water Heater MIDEA", identitas: "Midea D10-02VA Electric Storage Water Heater 10L" },
+                        { nama: "TROLLEY STEINLESS", identitas: "3-Tier Stainless Steel Heavy Duty Kitchen Service Cart" }
+                    ]
+                },
+                { 
+                    name: "GROUND", 
+                    items: [
+                        { nama: "Lampu gantung Koridor", identitas: "Modern Industrial Rattan Pendant Light E27 Base" },
+                        { nama: "Lampu gantung Dining", identitas: "Nordic Minimalist Chandelier Warm White 3000K" },
+                        { nama: "MAX Bread Toaster", identitas: "MAX Commercial Conveyor Toaster TT-150 Heavy Duty" },
+                        { nama: "Penanak nasi YONG MA", identitas: "Yong Ma MC-3600 Jumbo Commercial Rice Cooker 8.4L" },
+                        { nama: "Spring dial scale", identitas: "Camry Mechanical Dial Scale 50kg Capacity" },
+                        { nama: "Pompa submersible wasser", identitas: "Wasser WD-101 EA Submersible Sump Pump 100W" },
+                        { nama: "DAB Nova 330MA", identitas: "DAB Nova 330 M-A Submersible Drainage Pump 0.22kW" },
+                        { nama: "LEO Pompa", identitas: "LEO LKS-902PW Submersible Dirty Water Pump 900W" },
+                        { nama: "PANASONIC Pompa", identitas: "Panasonic GA-125JAK Automatic Pressure Pump 125W" },
+                        { nama: "Pompa DAB", identitas: "DAB KPS 30/16 M Peripheral Water Pump 0.3kW" },
+                        { nama: "APC Back UP SCHNEIDER", identitas: "APC Back-UPS 800VA BX800LI-MS AVR Line Interactive" },
+                        { nama: "Freezer SHARP", identitas: "Sharp FRV-200 Chest Freezer Single Door 200 Liters" },
+                        { nama: "Toaster PHILIPS", identitas: "Philips HD2581/00 Daily Collection 2 Slot Toaster" },
+                        { nama: "Akebonno Coffee Warmer", identitas: "Akebonno Commercial Twin Plate Coffee Warmer Decanter" },
+                        { nama: "TOTO Toilet Bowl", identitas: "TOTO CW421J/SW421JP Dual Flush Water Closet" },
+                        { nama: "SAMSUNG TV", identitas: "Samsung 43 Inch UA43AU7000 4K UHD Smart TV" },
+                        { nama: "Kompor RINNAI", identitas: "Rinnai RI-522E Commercial Double Burner Gas Stove" },
+                        { nama: "Standing Fan KRISBOW", identitas: "Krisbow Pedestal Industrial Fan 20 Inch 120W" },
+                        { nama: "Bill printer EPSON", identitas: "Epson TM-T82X Thermal Receipt POS Printer USB/Serial" }
+                    ]
+                },
+                { 
+                    name: "BOH", 
+                    items: [
+                        { nama: "Freezer Panasonic", identitas: "Panasonic NR-SF164S Deep Freezer Chest 160L" },
+                        { nama: "Freezer SHARP", identitas: "Sharp FJ-M189N-SS Upright Freezer 6 Drawers 158L" },
+                        { nama: "Blower ChaoBao", identitas: "ChaoBao CB-900 Floor Blower Air Mover 900W 3-Speed" },
+                        { nama: "Lampu Gantung Oval", identitas: "Modern Brass Finish Oval Glass Pendant Fixture" },
+                        { nama: "KLAZ KETEL", identitas: "Klaz Electric Kettle Stainless Steel 1.7L 1850W" },
+                        { nama: "Modena Kompor induksi", identitas: "Modena PI-1310 Portable Induction Hob 2000W Touch Control" },
+                        { nama: "Exhaust fan panasonic", identitas: "Panasonic FV-25RUN Ceiling Exhaust Fan 10 Inch" },
+                        { nama: "Ceiling Fan MT-EDMA", identitas: "Mt. Edma Designer Ceiling Fan 54 Inch 5 Blades" },
+                        { nama: "Lampu emergency Visalux", identitas: "Visalux VS-8822 Rechargeable Emergency LED Light 20W" },
+                        { nama: "TOTO Washtafel", identitas: "TOTO LW240CJ Countertop Ceramic Basin Washbasin" },
+                        { nama: "Indoor AC Daikin", identitas: "Daikin FTKQ25UVM4 Inverter Indoor Wall Unit 1 HP" },
+                        { nama: "Outdoor AC Daikin", identitas: "Daikin RKQ25UVM4 Outdoor Condensing Unit R32 1 HP" },
+                        { nama: "Minibar Sanken", identitas: "Sanken RS-060G Compact Refrigerator Minibar 50L" },
+                        { nama: "Outdoor AC Daikin 2PK", identitas: "Daikin R20NVM4 Heavy Duty Outdoor Unit 2 HP R32" },
+                        { nama: "Indoor AC Daikin 2PK", identitas: "Daikin FTV50BXV14 Standard Indoor Wall Unit 2 HP" },
+                        { nama: "Water heater Ariston", identitas: "Ariston Andris2 R 15L Electric Water Heater 350W" },
+                        { nama: "Outdoor AC Daikin 1.5PK", identitas: "Daikin RKC35UVM4 Inverter Outdoor Unit 1.5 HP" },
+                        { nama: "Ceiling Fan MT-EDMA", identitas: "Mt. Edma Tropical Ceiling Fan 52 Inch Remote Control" },
+                        { nama: "Tangga Alumunium", identitas: "Multipurpose Folding Aluminum Ladder 4x4 Steps 4.7m" },
+                        { nama: "Toilet Bowl TOTO", identitas: "TOTO CW600J Monoblock Water Closet Soft Closing" }
+                    ]
+                },
+                { 
+                    name: "SERVER", 
+                    items: [
+                        { nama: "UPS ICA SE3100", identitas: "ICA SE-3100 On-Line UPS 3000VA / 2400W Pure Sinewave" },
+                        { nama: "MikroTik RB3011UiAS", identitas: "MikroTik RB3011UiAS-RM Dual Core 1.4GHz Rackmount Router" },
+                        { nama: "Panasonic PABX", identitas: "Panasonic KX-TES824 Hybrid PBX System 8 Lines 24 Ext" },
+                        { nama: "HP ProCurve 2810-24G", identitas: "HP ProCurve 2810-24G Managed Gigabit Ethernet Switch" },
+                        { nama: "Panel LSA Telephone", identitas: "100-Pair LSA Disconnection Module Distribution Frame" },
+                        { nama: "HP 19 KA Monitor", identitas: "HP 19ka 18.5-Inch LED Backlit Monitor 1366x768" },
+                        { nama: "HiKvision NVR", identitas: "Hikvision DS-7732NI-K4 32-Channel 4K NVR Network Video Recorder" },
+                        { nama: "AC Daikin Indoor 1PK", identitas: "Daikin FTKC25UVM4 Smile Inverter Wall Unit 1 HP" },
+                        { nama: "AC Daikin Outdoor 1PK", identitas: "Daikin RKC25UVM4 Smile Inverter Outdoor Unit 1 HP" },
+                        { nama: "AC Indoor FTNE25MV14", identitas: "Daikin FTNE25MV14 Standard Wall Mounted Indoor 1 HP" },
+                        { nama: "AC Outdoor RNE25MV14", identitas: "Daikin RNE25MV14 Standard Condensing Outdoor 1 HP" }
+                    ]
+                },
+                { 
+                    name: "GENSET", 
+                    items: [
+                        { nama: "PERKINS Generator 60kVA", identitas: "Perkins Stamford Silent Diesel Generator Set 60 kVA 3-Phase" },
+                        { nama: "Mitsubishi Diesel 85kVA", identitas: "Mitsubishi Stamford Silent Diesel Genset 85 kVA ATS Controller" },
+                        { nama: "PERKINS Generator 60kVA", identitas: "Perkins Stamford Silent Backup Generator Set 60 kVA" }
+                    ]
+                },
+                { 
+                    name: "Lobby", 
+                    items: [
+                        { nama: "Reading lamp Front Desk", identitas: "Brass Finish Adjustable Hotel Reception Desk Lamp" },
+                        { nama: "Krisbow Safe Deposit Box", identitas: "Krisbow Hotel Safe Box Digital Keypad 200x430x370mm" },
+                        { nama: "UPS Schneider BVX700LUI", identitas: "APC Easy UPS BVX700LUI-MS 700VA / 360W USB Charging" },
+                        { nama: "Lenovo AIO Desktop", identitas: "Lenovo IdeaCentre AIO 3 24IAP7 Intel Core i5 8GB 512GB SSD" },
+                        { nama: "Epson Ecotank L3210", identitas: "Epson EcoTank L3210 All-in-One Ink Tank Printer" },
+                        { nama: "Krisbow Standing Fan", identitas: "Krisbow Commercial Stand Fan 18 Inch Oscillating 90W" },
+                        { nama: "TOSHIBA Glacio Kulkas", identitas: "Toshiba Glacio GR-N175BC Single Door Refrigerator 150L" },
+                        { nama: "Harman Kardon Aura 3", identitas: "Harman Kardon Aura Studio 3 Bluetooth Speaker 100W" }
+                    ]
+                },
+                { 
+                    name: "ENG Office", 
+                    items: [
+                        { nama: "Flaring pipa AC DSZH", identitas: "DSZH WK-806AM Eccentric Flaring Tool Kit Set for Refrigeration" },
+                        { nama: "Bor baterai BOSCH", identitas: "Bosch GSB 120-LI Cordless Impact Drill/Driver 12V Set" },
+                        { nama: "Gerinda BOSCH", identitas: "Bosch GWS 060 Professional Angle Grinder 4 Inch 670W" },
+                        { nama: "Bor listrik BOSCH", identitas: "Bosch GBM 350 Professional Electric Drill 350W 10mm" },
+                        { nama: "Mesin amplas Sanding tank", identitas: "Makita 9911 Heavy Duty Belt Sander 76x457mm 650W" },
+                        { nama: "Mesin serut Makita", identitas: "Makita N1900B Power Planer Electric Hand Wood 82mm" },
+                        { nama: "Bor baterai Makita", identitas: "Makita DF333DWYE Cordless Driver Drill 12V Max" },
+                        { nama: "Mesin potong circular saw", identitas: "Makita 5800NB Circular Saw 7 Inch 900W 4500 RPM" },
+                        { nama: "Bor listrik drill metabo", identitas: "Metabo SBE 650 Impact Drill 650W Keyless Chuck" },
+                        { nama: "Mesin las PPR TECHNO FUSION", identitas: "Techno Fusion Socket Fusion Welding Machine 20-63mm 800W" },
+                        { nama: "Tools box DIY", identitas: "Krisbow Heavy Duty Metal Cantilever Toolbox 5 Tray" },
+                        { nama: "Mesin bor listrik Makita", identitas: "Makita HP1630 Hammer Drill 13mm 710W Dual Mode" },
+                        { nama: "Mesin vakum VALUE", identitas: "Value VE115N Single Stage Refrigerant Vacuum Pump 1/4 HP" },
+                        { nama: "Jet cleaner AC KYODO", identitas: "Kyodo KTC-20 High Pressure Washer Cleaner Portable 20 Bar" },
+                        { nama: "Gerinda Makita", identitas: "Makita GA4030 Angle Grinder 4 Inch 720W High Performance" },
+                        { nama: "Mesin las LAKONI", identitas: "Lakoni Falcon 120e Inverter Welding Machine 900W 120A" },
+                        { nama: "Lampu emergency Visalux", identitas: "Visalux VS-3030 Rechargeable Wall Mounted Light 30 LED" },
+                        { nama: "Kompor Induksi MODENA", identitas: "Modena Esenza PI-1315 Single Induction Cooktop" },
+                        { nama: "Panel LVMDP/ATS", identitas: "Main Low Voltage Main Distribution Panel + Automatic Transfer Switch" },
+                        { nama: "Socket rachet handle", identitas: "Tekiro 24 Pcs Socket Wrench Set 1/2 Inch Chrome Vanadium" },
+                        { nama: "Jet cleaner AC KYOWA", identitas: "Kyowa KYC-20A Test Pump High Pressure Washer Japan Standard" },
+                        { nama: "Tangga alumunium FIXSTEP", identitas: "Fixstep Heavy Duty Telescopic Ladder Double 3.8m" },
+                        { nama: "Tangga alumunium IKEA", identitas: "IKEA MÄSTERBY Step Stool Light Durable Polypropylene" },
+                        { nama: "Trolley Stainless", identitas: "Foldable Stainless Steel Heavy Duty Flatbed Cart 300kg" },
+                        { nama: "Heat gun MAKITA", identitas: "Makita HG6030K Industrial Heat Gun 1800W Dual Speed" },
+                        { nama: "AC Daikin Indoor 1PK", identitas: "Daikin FTKC25UVM4 Inverter Indoor Unit 1 HP" },
+                        { nama: "AC Daikin Outdoor 1PK", identitas: "Daikin RKC25UVM4 Inverter Outdoor Condenser 1 HP" },
+                        { nama: "Harman Kardon Aura 3", identitas: "Harman Kardon Aura Studio 3 Ambient Lighting Speaker" },
+                        { nama: "Harman Kardon Onyx Studio 4", identitas: "Harman Kardon Onyx Studio 4 Portable Bluetooth Speaker 60W" },
+                        { nama: "CPU HP 280G3MT", identitas: "HP ProDesk 280 G3 MT Intel Core i3-7100 8GB RAM 1TB HDD" },
+                        { nama: "DESKTOP HP 19ka", identitas: "HP 19ka 18.5 Inch Widescreen Monitor 60Hz" },
+                        { nama: "Bio finger Fingerprint", identitas: "BioFinger AT-102 Standalone Fingerprint & RFID Time Attendance" },
+                        { nama: "KETEL HB-K012A", identitas: "HomePro Cordless Stainless Kettle 1.8L HB-K012A" }
+                    ]
+                },
+                { 
+                    name: "WORKSHOP", 
+                    items: [
+                        { nama: "Freezer box RSA", identitas: "RSA CF-310 Commercial Chest Freezer 300 Liters" },
+                        { nama: "Freezer box SHARP", identitas: "Sharp FRV-300 Chest Freezer 300 Liters Direct Cooling" },
+                        { nama: "Kompresor MULTI PRO", identitas: "MultiPro BC-100/24 Air Compressor Belt Drive 1 HP 24L" },
+                        { nama: "GRUNDFOS Pompa", identitas: "Grundfos CMB5-37 PT Pressure Booster Water Pump 0.67kW" },
+                        { nama: "Kompor induksi MODENA", identitas: "Modena PI-1310 Portable Induction Hob 2000W Touch" },
+                        { nama: "Exhaust CKE FA-45", identitas: "CKE FA-45 Industrial Exhaust Fan 18 Inch 220V" },
+                        { nama: "Pompa jetpump LEO", identitas: "LEO AJM75 Self-Priming Deep Well Jet Pump 1 HP" },
+                        { nama: "Pompa PANASONIC", identitas: "Panasonic GA-200PAK Automatic Pressure Pump 200W" },
+                        { nama: "Water heater Midea", identitas: "Midea D30-08VA Electric Storage Water Heater 30L" },
+                        { nama: "Water heater Ariston", identitas: "Ariston Pro R 50V Electric Storage Heater 50L 1200W" },
+                        { nama: "Blower ChaoBao", identitas: "ChaoBao CB-900 High Velocity Floor Dryer 900W" },
+                        { nama: "TV Samsung UA43N5003", identitas: "Samsung 43 Inch UA43N5003 Full HD LED TV 1080p" }
+                    ]
+                },
+                { 
+                    name: "HK Office", 
+                    items: [
+                        { nama: "Printer HP LaserJet", identitas: "HP LaserJet Pro M12w Wireless Monochrome Printer" },
+                        { nama: "CPU DELL OptiPlex", identitas: "Dell OptiPlex 3050 Small Form Factor Intel Core i5 8GB RAM" },
+                        { nama: "AC Indoor Daikin", identitas: "Daikin FTV25BXV14 Standard Indoor Wall Unit 1 HP" },
+                        { nama: "AC Outdoor Daikin", identitas: "Daikin RV25BXV14 Standard Condensing Outdoor 1 HP" },
+                        { nama: "DESKTOP HP 19ka", identitas: "HP 19ka 18.5-Inch LED Backlit LCD Monitor" }
+                    ]
+                },
+                { 
+                    name: "Log Pump", 
+                    items: generatePumpItems()
+                },
+                { 
+                    name: "Villa Setup", 
+                    items: generateVillaItems()
+                }
+            ];
+
+            const result = {};
+            unitsConfig.forEach(uConfig => {
+                result[uConfig.name] = [];
+                uConfig.items.forEach((itemObj, i) => {
+                    const isRusak = (i % 5 === 0);
+                    result[uConfig.name].push({
+                        no: i + 1,
+                        nama: itemObj.nama,
+                        identitas: itemObj.identitas,
+                        qty: (i % 3 === 0) ? 2 : 1,
+                        kondisi: isRusak ? "Rusak" : "Bagus",
+                        status: isRusak ? "Tidak Terpakai" : "Terpakai",
+                        urgency: isRusak ? "URGENT" : "NOT URGENT, BUT IMPORTANT",
+                        biaya: isRusak ? 6500000 : 250000,
+                        alokasi: isRusak ? "CAPEX" : "OPEX",
+                        action: isRusak ? "Penggantian Unit Baru (Replace - Capex)" : "Servis Rutin & Maintenance",
+                        tanggal: "2026-07-29"
+                    });
+                });
+            });
+            return result;
+        }
+
+        function generatePumpItems() {
+            const villas = ['101','102','103','105','201','202','203','205','206','301','302','303','305','306','307','308','309','501','502','503','505','506','507','508'];
+            const items = [];
+            villas.forEach(v => {
+                items.push({ nama: `Pool Pump DAB Villa ${v}`, identitas: `DAB Euroswim 100M Swimming Pool Pump 1 HP Single Phase` });
+                items.push({ nama: `Booster Pump WILO/DAB Villa ${v}`, identitas: `WILO HiMulti 3 / DAB Esybox Mini 3 Constant Pressure System` });
+            });
+            items.push({ nama: "Pool Pump PANASONIC BOH", identitas: "Panasonic GP-350JXK Heavy Duty Circulation Pump 350W" });
+            return items;
+        }
+
+        function generateVillaItems() {
+            const villas = ['101','102','103','105','201','202','203','205','206','301','302','303','305','306','307','308','309','501','502','503','505','506','507','508'];
+            const items = [];
+            villas.forEach(v => {
+                const tvBrand = parseInt(v) > 306 ? "TCL" : "Samsung";
+                const tvModel = tvBrand === "Samsung" ? `Samsung 43 Inch UA43AU7000 4K UHD Smart TV (Villa ${v})` : `TCL 43 Inch 43P635 4K HDR Google Smart TV (Villa ${v})`;
+                items.push({ nama: `Television ${tvBrand} V${v}`, identitas: tvModel });
+            });
+            villas.forEach(v => {
+                items.push({ nama: `Water Heater Midea V${v}`, identitas: `Midea D30-08VA Electric Storage Water Heater 30L (Villa ${v})` });
+            });
+            return items;
+        }
+
+        let dataset = generateInitialDataset();
+
+        let currentActiveTab = 'summary';
+        let historyStack = [];
+        let redoStack = [];
+        let isFinancialVisible = true;
+        let isSpecVisible = true;
+        let isStatusVisible = true;
+        let isConclusionVisible = true;
+
+        let chartUnitDist = null;
+        let chartConditionPie = null;
+        let chartCostAlloc = null;
+        let unitPriorityChart = null;
+        let unitConditionChart = null;
+        let unitBudgetChart = null;
+
+        function changeFontSize(size) {
+            document.getElementById('font-size-val').textContent = size + 'px';
+            document.body.style.fontSize = size + 'px';
+        }
+
+        function changeFontFamily(family) {
+            document.body.style.fontFamily = family;
+        }
+
+        function changeCostColor(color) {
+            document.querySelectorAll('.financial-val').forEach(el => {
+                el.style.color = color;
+            });
+        }
+
+        function resetTypography() {
+            document.getElementById('font-size-slider').value = 13.5;
+            changeFontSize(13.5);
+            changeFontFamily("'Plus Jakarta Sans', sans-serif");
+            resetChartHeight();
+        }
+
+        function applyActionPreset(val) {
+            if (val) document.getElementById('form-action').value = val;
+        }
+
+        function adjustChartHeight(val) {
+            document.getElementById('chart-height-val').textContent = val + 'px';
+            const boxes = ['box-chart-1', 'box-chart-2', 'box-chart-3', 'box-mini-chart-1', 'box-mini-chart-2', 'box-mini-chart-3'];
+            boxes.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.height = val + 'px';
+            });
+            if (chartUnitDist) chartUnitDist.resize();
+            if (chartConditionPie) chartConditionPie.resize();
+            if (chartCostAlloc) chartCostAlloc.resize();
+            if (unitPriorityChart) unitPriorityChart.resize();
+            if (unitConditionChart) unitConditionChart.resize();
+            if (unitBudgetChart) unitBudgetChart.resize();
+        }
+
+        function resetChartHeight() {
+            document.getElementById('chart-height-slider').value = 320;
+            adjustChartHeight(320);
+        }
+
+        function getPriorityBadge(pVal) {
+            if (!pVal) pVal = 'NOT URGENT, BUT IMPORTANT';
+            const v = pVal.toUpperCase();
+            
+            if (v === 'URGENT' || (v.includes('URGENT') && !v.includes('NOT'))) {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">🔴 URGENT</span>`;
+            } else if (v === 'IMPORTANT' || (v.includes('IMPORTANT') && !v.includes('NOT'))) {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">🟡 IMPORTANT</span>`;
+            } else if (v.includes('DONE')) {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">🟢 DONE</span>`;
+            } else if (v.includes('NOT URGENT, BUT IMPORTANT') || v.includes('BUT IMPORTANT')) {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">🟤 NOT URGENT, BUT IMPORTANT</span>`;
+            } else if (v.includes('NOT IMPORTANT') || v.includes('FOLLOW UP') || v.includes('BIRU')) {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">🔵 NOT URGENT, NOT IMPORTANT</span>`;
+            } else {
+                return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">${pVal}</span>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('agranusa_audit_data_v11');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    if (parsed && Object.keys(parsed).length > 0) dataset = parsed;
+                } catch (e) { console.error("Error loading local storage", e); }
+            }
+
+            const savedLogo = localStorage.getItem('agranusa_audit_logo');
+            if (savedLogo) applyLogo(savedLogo);
+
+            const savedSidebarTitle = localStorage.getItem('agranusa_sidebar_title');
+            if (savedSidebarTitle) document.getElementById('sidebar-main-title').innerText = savedSidebarTitle;
+
+            const savedHotelName = localStorage.getItem('agranusa_hotel_name');
+            if (savedHotelName) document.getElementById('hotel-name-display').innerText = savedHotelName;
+
+            const savedMainTitle = localStorage.getItem('agranusa_main_title');
+            if (savedMainTitle) document.getElementById('page-title').innerText = savedMainTitle;
+
+            const savedReportTitle = localStorage.getItem('agranusa_report_title');
+            if (savedReportTitle) document.getElementById('header-report-title').innerText = savedReportTitle;
+
+            const savedAuditDate = localStorage.getItem('agranusa_audit_date');
+            if (savedAuditDate) document.getElementById('audit-date-display').innerText = savedAuditDate;
+
+            const savedAuditorName = localStorage.getItem('agranusa_auditor_name') || 'I Made Wijaya, S.T.';
+            const savedAuditorRole = localStorage.getItem('agranusa_auditor_role') || 'Chief Engineering';
+
+            document.getElementById('auditor-name-header').innerText = savedAuditorName;
+            document.getElementById('auditor-name-sidebar').innerText = savedAuditorName;
+            document.getElementById('auditor-role-header').innerText = savedAuditorRole;
+            document.getElementById('auditor-role-sidebar').innerText = savedAuditorRole;
+
+            setupSync('auditor-name-header', 'auditor-name-sidebar', 'agranusa_auditor_name');
+            setupSync('auditor-name-sidebar', 'auditor-name-header', 'agranusa_auditor_name');
+            setupSync('auditor-role-header', 'auditor-role-sidebar', 'agranusa_auditor_role');
+            setupSync('auditor-role-sidebar', 'auditor-role-header', 'agranusa_auditor_role');
+
+            document.getElementById('sidebar-main-title').addEventListener('blur', (e) => localStorage.setItem('agranusa_sidebar_title', e.target.innerText.trim()));
+            document.getElementById('hotel-name-display').addEventListener('blur', (e) => localStorage.setItem('agranusa_hotel_name', e.target.innerText.trim()));
+            document.getElementById('page-title').addEventListener('blur', (e) => localStorage.setItem('agranusa_main_title', e.target.innerText.trim()));
+            document.getElementById('header-report-title').addEventListener('blur', (e) => localStorage.setItem('agranusa_report_title', e.target.innerText.trim()));
+            document.getElementById('audit-date-display').addEventListener('blur', (e) => localStorage.setItem('agranusa_audit_date', e.target.innerText.trim()));
+
+            renderSidebarMenu();
+            renderSummaryDashboard();
+            saveStateToHistory(false);
+        });
+
+        function setupSync(sourceId, targetId, storageKey) {
+            const el = document.getElementById(sourceId);
+            if (!el) return;
+            el.addEventListener('input', (e) => {
+                const val = e.target.innerText;
+                const target = document.getElementById(targetId);
+                if (target) target.innerText = val;
+                localStorage.setItem(storageKey, val.trim());
+            });
+        }
+
+        function saveStateToHistory(clearRedo = true) {
+            historyStack.push(JSON.stringify(dataset));
+            if (historyStack.length > 30) historyStack.shift();
+            if (clearRedo) redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function undo() {
+            if (historyStack.length > 1) {
+                redoStack.push(historyStack.pop());
+                dataset = JSON.parse(historyStack[historyStack.length - 1]);
+                refreshUI();
+                updateUndoRedoButtons();
+            }
+        }
+
+        function redo() {
+            if (redoStack.length > 0) {
+                const nextState = redoStack.pop();
+                historyStack.push(nextState);
+                dataset = JSON.parse(nextState);
+                refreshUI();
+                updateUndoRedoButtons();
+            }
+        }
+
+        function updateUndoRedoButtons() {
+            document.getElementById('undo-btn').disabled = historyStack.length <= 1;
+            document.getElementById('redo-btn').disabled = redoStack.length === 0;
+        }
+
+        function restoreOriginalExcelData() {
+            if (confirm("Apakah Anda yakin ingin mengembalikan seluruh data aset awal?")) {
+                localStorage.removeItem('agranusa_audit_data_v11');
+                dataset = generateInitialDataset();
+                refreshUI();
+            }
+        }
+
+        function refreshUI() {
+            renderSidebarMenu();
+            if (currentActiveTab === 'summary') {
+                renderSummaryDashboard();
+            } else if (currentActiveTab === 'conclusion') {
+                renderConclusionView();
+            } else {
+                renderCurrentUnitTable();
+            }
+            localStorage.setItem('agranusa_audit_data_v11', JSON.stringify(dataset));
+        }
+
+        function saveData() {
+            localStorage.setItem('agranusa_audit_data_v11', JSON.stringify(dataset));
+            localStorage.setItem('agranusa_sidebar_title', document.getElementById('sidebar-main-title').innerText.trim());
+            localStorage.setItem('agranusa_hotel_name', document.getElementById('hotel-name-display').innerText.trim());
+            localStorage.setItem('agranusa_main_title', document.getElementById('page-title').innerText.trim());
+            localStorage.setItem('agranusa_report_title', document.getElementById('header-report-title').innerText.trim());
+            localStorage.setItem('agranusa_audit_date', document.getElementById('audit-date-display').innerText.trim());
+            localStorage.setItem('agranusa_auditor_name', document.getElementById('auditor-name-header').innerText.trim());
+            localStorage.setItem('agranusa_auditor_role', document.getElementById('auditor-role-header').innerText.trim());
+            alert("Seluruh Data Audit & Action Plan berhasil disimpan!");
+        }
+
+        function changeLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoUrl = e.target.result;
+                    applyLogo(logoUrl);
+                    localStorage.setItem('agranusa_audit_logo', logoUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyLogo(logoUrl) {
+            const img = document.getElementById('app-logo');
+            const icon = document.getElementById('app-logo-icon');
+            img.src = logoUrl;
+            img.classList.remove('hidden');
+            icon.classList.add('hidden');
+        }
+
+        function toggleFinancials() {
+            isFinancialVisible = !isFinancialVisible;
+            const container = document.body;
+            const btnText = document.getElementById('finance-btn-text');
+            const btnIcon = document.getElementById('finance-icon');
+
+            if (isFinancialVisible) {
+                container.classList.remove('hide-financial');
+                btnText.textContent = "Sembunyikan Biaya";
+                btnIcon.className = "fa-solid fa-eye-slash";
+            } else {
+                container.classList.add('hide-financial');
+                btnText.textContent = "Tampilkan Biaya";
+                btnIcon.className = "fa-solid fa-eye";
+            }
+        }
+
+        function toggleSpecColumn() {
+            isSpecVisible = !isSpecVisible;
+            const container = document.body;
+            const btnText = document.getElementById('spec-btn-text');
+            const btnIcon = document.getElementById('spec-icon');
+
+            if (isSpecVisible) {
+                container.classList.remove('hide-spec');
+                btnText.textContent = "Sembunyikan Merek/Spesifikasi";
+                btnIcon.className = "fa-solid fa-tag";
+            } else {
+                container.classList.add('hide-spec');
+                btnText.textContent = "Tampilkan Merek/Spesifikasi";
+                btnIcon.className = "fa-solid fa-tags";
+            }
+        }
+
+        function toggleStatusColumn() {
+            isStatusVisible = !isStatusVisible;
+            const container = document.body;
+            const btnText = document.getElementById('status-btn-text');
+            const btnIcon = document.getElementById('status-icon');
+
+            if (isStatusVisible) {
+                container.classList.remove('hide-status');
+                btnText.textContent = "Sembunyikan Status";
+                btnIcon.className = "fa-solid fa-toggle-on";
+            } else {
+                container.classList.add('hide-status');
+                btnText.textContent = "Tampilkan Status";
+                btnIcon.className = "fa-solid fa-toggle-off";
+            }
+        }
+
+        function toggleConclusionSection() {
+            isConclusionVisible = !isConclusionVisible;
+            const container = document.body;
+            const btnText = document.getElementById('conclusion-btn-text');
+            const btnIcon = document.getElementById('conclusion-icon');
+
+            if (isConclusionVisible) {
+                container.classList.remove('hide-conclusion');
+                btnText.textContent = "Sembunyikan Analisis";
+                btnIcon.className = "fa-solid fa-file-contract";
+            } else {
+                container.classList.add('hide-conclusion');
+                btnText.textContent = "Tampilkan Analisis";
+                btnIcon.className = "fa-solid fa-file-circle-xmark";
+            }
+        }
+
+        function renderSidebarMenu() {
+            const listContainer = document.getElementById('unit-menu-list');
+            listContainer.innerHTML = '';
+            let totalActualQtyAll = calculateAllUnitsTotalQty();
+
+            Object.keys(dataset).forEach((unitName) => {
+                const uQtyActual = calculateUnitTotalQty(dataset[unitName]);
+
+                const isActive = (currentActiveTab === unitName);
+                const activeClass = isActive ? 'sidebar-item-active' : 'text-slate-300 hover:bg-slate-800';
+
+                const div = document.createElement('div');
+                div.className = "group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition " + activeClass;
+                div.innerHTML = `
+                    <button onclick="switchTab('${unitName}')" class="flex-1 flex items-center gap-2.5 text-left truncate">
+                        <i class="fa-solid fa-folder ${isActive ? 'text-amber-500' : 'text-slate-500'} text-xs"></i>
+                        <span class="truncate">${unitName}</span>
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-slate-900 text-white' : 'bg-slate-800 text-slate-400'}" title="QTY Actual">${uQtyActual}</span>
+                        <div class="hidden group-hover:flex items-center gap-1 ml-1 no-print">
+                            <button onclick="openEditUnitModal('${unitName}')" class="text-slate-400 hover:text-amber-400 p-1" title="Edit Nama Unit"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                            <button onclick="deleteUnit('${unitName}')" class="text-slate-400 hover:text-rose-400 p-1" title="Hapus Unit"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+
+            document.getElementById('total-all-badge').textContent = totalActualQtyAll;
+            document.getElementById('footer-total-items').textContent = totalActualQtyAll;
+        }
+
+        function switchTab(tabName) {
+            currentActiveTab = tabName;
+            document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('sidebar-item-active'));
+            
+            document.getElementById('view-summary').classList.add('hidden');
+            document.getElementById('view-unit').classList.add('hidden');
+            document.getElementById('view-conclusion').classList.add('hidden');
+
+            if (tabName === 'summary') {
+                document.getElementById('nav-summary').classList.add('sidebar-item-active');
+                document.getElementById('view-summary').classList.remove('hidden');
+                document.getElementById('page-subtitle').textContent = "Ringkasan kondisi, jumlah, status, dan biaya perawatan seluruh fasilitas properti.";
+                renderSummaryDashboard();
+            } else if (tabName === 'conclusion') {
+                document.getElementById('nav-conclusion').classList.add('sidebar-item-active');
+                document.getElementById('view-conclusion').classList.remove('hidden');
+                document.getElementById('page-subtitle').textContent = "Kesimpulan audit eksekutif, evaluasi 6 perspektif stakeholder, dan langkah strategis operasional.";
+                renderConclusionView();
+            } else {
+                document.getElementById('view-unit').classList.remove('hidden');
+                const headingEl = document.getElementById('current-unit-heading-title');
+                if (headingEl) headingEl.textContent = tabName;
+
+                document.getElementById('page-subtitle').textContent = "Daftar rincian item aset, spesifikasi, kondisi, rekomendasi tindakan (action plan), dan perkiraan biaya untuk unit " + tabName + ".";
+                renderCurrentUnitTable();
+            }
+            renderSidebarMenu();
+        }
+
+        function calculateGlobalMetrics() {
+            let totalQty = 0, totalTypes = 0, urgentCount = 0, rusakCount = 0, bagusCount = 0;
+            let totalCost = 0, capexCost = 0, opexCost = 0;
+
+            Object.keys(dataset).forEach(uName => {
+                const items = dataset[uName];
+                totalTypes += items.length;
+
+                items.forEach(it => {
+                    const itemQty = parseInt(it.qty) || 1;
+                    totalQty += itemQty;
+
+                    const isRusak = (it.kondisi && (it.kondisi.includes('Rusak') || it.kondisi.includes('Perlu')));
+                    if (isRusak) rusakCount += itemQty; else bagusCount += itemQty;
+
+                    const pVal = (it.urgency || '').toUpperCase();
+                    if (pVal === 'URGENT' || (pVal.includes('URGENT') && !pVal.includes('NOT'))) {
+                        urgentCount += itemQty;
+                    }
+
+                    const cost = (parseFloat(it.biaya) || 0) * itemQty;
+                    totalCost += cost;
+                    if (it.alokasi === 'CAPEX') capexCost += cost; else opexCost += cost;
+                });
+            });
+
+            const healthScore = totalQty > 0 ? ((bagusCount / totalQty) * 100).toFixed(2) : "0.00";
+
+            return {
+                totalQty, totalTypes, urgentCount, rusakCount, bagusCount,
+                totalCost, capexCost, opexCost, healthScore
+            };
+        }
+
+        function renderConclusionView() {
+            const m = calculateGlobalMetrics();
+
+            document.getElementById('conclusion-health-score').textContent = m.healthScore + "%";
+            let category = "Sangat Baik (Optimal)";
+            if (m.healthScore < 60) category = "Kritis (Butuh Perbaikan Total)";
+            else if (m.healthScore < 80) category = "Baik (Minor Issue / Perlu Service)";
+            else if (m.healthScore < 90) category = "Sangat Baik (Standar Tinggi)";
+            document.getElementById('conclusion-health-category').textContent = "Kategori: " + category;
+
+            document.getElementById('conclusion-total-qty').textContent = m.totalQty + " Unit";
+            document.getElementById('conclusion-total-types').textContent = m.totalTypes + " Jenis Peralatan Lengkap";
+
+            const rusakPct = m.totalQty > 0 ? ((m.rusakCount / m.totalQty) * 100).toFixed(2) : "0.00";
+            document.getElementById('conclusion-rusak-urgent').textContent = `${m.rusakCount} Unit (${rusakPct}%)`;
+
+            document.getElementById('conclusion-capex-cost').textContent = "Rp " + m.capexCost.toLocaleString('id-ID');
+            const capexPct = m.totalCost > 0 ? ((m.capexCost / m.totalCost) * 100).toFixed(2) : "0.00";
+            document.getElementById('conclusion-capex-pct').textContent = `${capexPct}% Kebutuhan Penggantian`;
+
+            document.getElementById('conclusion-opex-cost').textContent = "Rp " + m.opexCost.toLocaleString('id-ID');
+            const opexPct = m.totalCost > 0 ? ((m.opexCost / m.totalCost) * 100).toFixed(2) : "0.00";
+            document.getElementById('conclusion-opex-pct').textContent = `${opexPct}% Servis & Maintenance`;
+
+            const recCapexEl = document.getElementById('rec-capex-text');
+            if (recCapexEl) {
+                recCapexEl.innerHTML = `<strong>Pencairan CAPEX Prioritas Utama (Rp ${m.capexCost.toLocaleString('id-ID')}):</strong> Segera alokasikan penggantian unit kritis yang dalam kondisi rusak untuk mencegah gangguan operasional villa.`;
+            }
+        }
+
+        function renderSummaryDashboard() {
+            let totalActualQty = 0, totalTypes = 0, urgentCount = 0, rusakCount = 0, totalCost = 0, totalCapex = 0, totalOpex = 0;
+            let cRed = 0, cYellow = 0, cGreen = 0, cBrown = 0, cBlue = 0;
+
+            const unitNames = Object.keys(dataset);
+            const unitCounts = [], unitUrgent = [], unitCapex = [], unitOpex = [];
+
+            const summaryTbody = document.getElementById('summary-table-body');
+            summaryTbody.innerHTML = '';
+
+            unitNames.forEach(uName => {
+                const items = dataset[uName];
+                const uQtyActual = calculateUnitTotalQty(items);
+                totalActualQty += uQtyActual;
+                totalTypes += items.length;
+
+                let uBagus = 0, uRusak = 0, uUrg = 0, uCost = 0, uCap = 0, uOp = 0;
+
+                items.forEach(it => {
+                    const itemQty = parseInt(it.qty) || 1;
+                    const isRusak = (it.kondisi && (it.kondisi.includes('Rusak') || it.kondisi.includes('Perlu')));
+                    if (isRusak) uRusak += itemQty; else uBagus += itemQty;
+
+                    const pVal = (it.urgency || '').toUpperCase();
+                    if (pVal === 'URGENT' || (pVal.includes('URGENT') && !pVal.includes('NOT'))) { uUrg += itemQty; cRed += itemQty; }
+                    else if (pVal === 'IMPORTANT' || (pVal.includes('IMPORTANT') && !pVal.includes('NOT'))) { cYellow += itemQty; }
+                    else if (pVal.includes('DONE')) { cGreen += itemQty; }
+                    else if (pVal.includes('BUT IMPORTANT') || pVal.includes('NOT URGENT, BUT IMPORTANT')) { cBrown += itemQty; }
+                    else if (pVal.includes('BIRU') || pVal.includes('FOLLOW UP') || pVal.includes('NOT IMPORTANT')) { cBlue += itemQty; }
+                    else { cBrown += itemQty; }
+
+                    const cost = (parseFloat(it.biaya) || 0) * itemQty;
+                    uCost += cost;
+                    if (it.alokasi === 'CAPEX') uCap += cost; else uOp += cost;
+                });
+
+                urgentCount += uUrg; rusakCount += uRusak; totalCost += uCost; totalCapex += uCap; totalOpex += uOp;
+                unitCounts.push(uQtyActual); unitUrgent.push(uUrg); unitCapex.push(uCap); unitOpex.push(uOp);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-4 font-semibold text-slate-800">${uName}</td>
+                    <td class="py-2.5 px-3 text-center font-bold text-slate-900">${uQtyActual} Unit</td>
+                    <td class="py-2.5 px-3 text-center text-emerald-600 font-medium">${uBagus}</td>
+                    <td class="py-2.5 px-3 text-center text-amber-600 font-medium">${uRusak}</td>
+                    <td class="py-2.5 px-3 text-center">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${uUrg > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-500'}">
+                            ${uUrg} Urgent
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-4 text-right font-bold text-emerald-600 financial-field financial-val">Rp ${uCost.toLocaleString('id-ID')}</td>
+                    <td class="py-2.5 px-3 text-center no-print">
+                        <button onclick="switchTab('${uName}')" class="px-2.5 py-1 bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold transition shadow-sm">Lihat Detail</button>
+                    </td>
+                `;
+                summaryTbody.appendChild(tr);
+            });
+
+            document.getElementById('summary-total-items').textContent = totalActualQty + " Unit";
+            document.getElementById('summary-total-item-types').textContent = totalTypes + " Jenis Item";
+            document.getElementById('summary-urgent-count').textContent = urgentCount + " Unit";
+            document.getElementById('summary-urgent-pct').textContent = totalActualQty > 0 ? Math.round((urgentCount / totalActualQty) * 100) + "% dari total QTY" : "0%";
+            document.getElementById('summary-rusak-count').textContent = rusakCount + " Unit";
+            document.getElementById('summary-total-cost').textContent = "Rp " + totalCost.toLocaleString('id-ID');
+            document.getElementById('summary-capex-opex-ratio').textContent = `CAPEX: Rp ${totalCapex.toLocaleString('id-ID')} | OPEX: Rp ${totalOpex.toLocaleString('id-ID')}`;
+
+            renderCharts(unitNames, unitCounts, unitUrgent, cRed, cYellow, cGreen, cBrown, cBlue, unitCapex, unitOpex);
+            renderConclusionView();
+        }
+
+        function renderCharts(labels, counts, urgents, cRed, cYellow, cGreen, cBrown, cBlue, capexList, opexList) {
+            if (chartUnitDist) chartUnitDist.destroy();
+            if (chartConditionPie) chartConditionPie.destroy();
+            if (chartCostAlloc) chartCostAlloc.destroy();
+
+            Chart.defaults.color = '#64748B';
+            Chart.defaults.borderColor = '#E2E8F0';
+
+            const ctx1 = document.getElementById('chart-unit-distribution').getContext('2d');
+            chartUnitDist = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Total QTY Actual', data: counts, backgroundColor: '#0F172A', borderRadius: 5 },
+                        { label: 'Prioritas Urgent (Merah)', data: urgents, backgroundColor: '#E11D48', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 20, bottom: 5, left: 5, right: 5 } },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#334155', font: { size: 11 } } },
+                        datalabels: {
+                            anchor: 'end', align: 'top', offset: 2, color: '#0F172A',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: function(value) { return value > 0 ? value : ''; }
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('chart-condition-pie').getContext('2d');
+            const pieTotal = cRed + cYellow + cGreen + cBrown + cBlue;
+
+            chartConditionPie = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🔴 URGENT', '🟡 IMPORTANT', '🟢 DONE', '🟤 NOT URGENT, BUT IMPORTANT', '🔵 BIRU / FOLLOW UP'],
+                    datasets: [{
+                        data: [cRed, cYellow, cGreen, cBrown, cBlue],
+                        backgroundColor: ['#E11D48', '#D97706', '#059669', '#B8860B', '#2563EB'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: 10 },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 10 }, color: '#334155' } },
+                        datalabels: {
+                            color: '#ffffff', font: { weight: 'bold', size: 10.5 },
+                            formatter: function(value) {
+                                if (value === 0 || pieTotal === 0) return '';
+                                return value + ' (' + Math.round((value / pieTotal) * 100) + '%)';
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctx3 = document.getElementById('chart-cost-allocation').getContext('2d');
+            chartCostAlloc = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'CAPEX (Rp)', data: capexList, backgroundColor: '#059669', borderRadius: 5 },
+                        { label: 'OPEX (Rp)', data: opexList, backgroundColor: '#D97706', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 20, bottom: 5, left: 5, right: 5 } },
+                    scales: { 
+                        x: { stacked: true }, 
+                        y: { 
+                            stacked: true,
+                            ticks: {
+                                callback: function(val) {
+                                    return 'Rp ' + Number(val).toLocaleString('id-ID');
+                                }
+                            }
+                        } 
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#334155', font: { size: 11 } } },
+                        datalabels: {
+                            color: '#ffffff', font: { weight: 'bold', size: 9 },
+                            formatter: function(value) { return formatRupiahShort(value); }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCurrentUnitTable() {
+            const unitName = currentActiveTab;
+            if (!dataset[unitName]) return;
+
+            const headingEl = document.getElementById('current-unit-heading-title');
+            if (headingEl) headingEl.textContent = unitName;
+
+            const items = dataset[unitName];
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const filterUrg = document.getElementById('filter-urgency').value;
+            const filterCond = document.getElementById('filter-condition').value;
+
+            let totalQty = 0, bagusCount = 0, rusakCount = 0, urgentCount = 0, totalCost = 0;
+            let uRed = 0, uYellow = 0, uGreen = 0, uBrown = 0, uBlue = 0, uCapex = 0, uOpex = 0;
+
+            const tbody = document.getElementById('unit-table-body');
+            tbody.innerHTML = '';
+            let displayIndex = 1;
+
+            items.forEach((item, originalIndex) => {
+                const matchesSearch = !searchVal || 
+                    (item.nama && item.nama.toLowerCase().includes(searchVal)) || 
+                    (item.identitas && item.identitas.toLowerCase().includes(searchVal)) ||
+                    (item.action && item.action.toLowerCase().includes(searchVal));
+
+                const itemPVal = (item.urgency || '').toUpperCase();
+                const matchesUrg = filterUrg === 'ALL' || itemPVal.includes(filterUrg.toUpperCase());
+                const matchesCond = filterCond === 'ALL' || (filterCond === 'Bagus' && !item.kondisi.includes('Rusak')) || (filterCond === 'Rusak' && item.kondisi.includes('Rusak'));
+
+                const itemQty = parseInt(item.qty) || 1;
+                const isRusak = item.kondisi && item.kondisi.includes('Rusak');
+                if (isRusak) rusakCount += itemQty; else bagusCount += itemQty;
+
+                if (itemPVal === 'URGENT' || (itemPVal.includes('URGENT') && !itemPVal.includes('NOT'))) { uRed += itemQty; urgentCount += itemQty; }
+                else if (itemPVal === 'IMPORTANT' || (itemPVal.includes('IMPORTANT') && !itemPVal.includes('NOT'))) { uYellow += itemQty; }
+                else if (itemPVal.includes('DONE')) { uGreen += itemQty; }
+                else if (itemPVal.includes('BUT IMPORTANT') || itemPVal.includes('NOT URGENT, BUT IMPORTANT')) { uBrown += itemQty; }
+                else if (itemPVal.includes('BIRU') || itemPVal.includes('FOLLOW UP') || itemPVal.includes('NOT IMPORTANT')) { uBlue += itemQty; }
+                else { uBrown += itemQty; }
+
+                totalQty += itemQty;
+                const itemBiaya = (parseFloat(item.biaya) || 0) * itemQty;
+                totalCost += itemBiaya;
+                if (item.alokasi === 'CAPEX') uCapex += itemBiaya; else uOpex += itemBiaya;
+
+                if (matchesSearch && matchesUrg && matchesCond) {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs";
+                    tr.innerHTML = `
+                        <td class="py-2.5 px-2 text-center font-bold text-slate-400">${displayIndex++}</td>
+                        <td class="py-2.5 px-3 font-semibold text-slate-800">${item.nama || '-'}</td>
+                        <td class="py-2.5 px-3 text-slate-600 leading-snug spec-field">${item.identitas || '-'}</td>
+                        <td class="py-2.5 px-2 text-center font-black text-slate-900 bg-slate-50/50">${itemQty}</td>
+                        <td class="py-2.5 px-2 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold ${isRusak ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                ${item.kondisi || 'Bagus'}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-2 text-center text-slate-600 font-medium status-field">${item.status || 'Terpakai'}</td>
+                        <td class="py-2.5 px-3 text-center">${getPriorityBadge(item.urgency)}</td>
+                        <td class="py-2.5 px-3 font-medium text-slate-700 leading-snug">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-slate-400 text-[10px] shrink-0"></i>
+                                <span>${item.action || 'Servis & Pemeliharaan Rutin'}</span>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-bold text-emerald-600 financial-field financial-val">Rp ${itemBiaya.toLocaleString('id-ID')}</td>
+                        <td class="py-2.5 px-2 text-center financial-field">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${item.alokasi === 'CAPEX' ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}">
+                                ${item.alokasi || 'OPEX'}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-2 text-center text-slate-400 text-[11px]">${item.tanggal || '-'}</td>
+                        <td class="py-2.5 px-2 text-center no-print">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="openEditItemModal(${originalIndex})" class="p-1 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded transition" title="Edit Item & Action Plan"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="saveData()" class="p-1 text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded transition" title="Simpan Perubahan"><i class="fa-solid fa-floppy-disk"></i></button>
+                                <button onclick="deleteItem(${originalIndex})" class="p-1 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded transition" title="Hapus Item"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('unit-total-qty').textContent = totalQty + " Unit (Total QTY)";
+            document.getElementById('unit-condition-ratio').textContent = `${bagusCount} Bagus / ${rusakCount} Rusak`;
+            document.getElementById('unit-urgent-count').textContent = urgentCount + " Unit Urgent";
+            document.getElementById('unit-total-cost').textContent = "Rp " + totalCost.toLocaleString('id-ID');
+
+            renderIndividualUnitCharts(uRed, uYellow, uGreen, uBrown, uBlue, uCapex, uOpex, bagusCount, rusakCount);
+        }
+
+        function renderIndividualUnitCharts(r, y, g, br, bl, capex, opex, bagus, rusak) {
+            if (unitPriorityChart) unitPriorityChart.destroy();
+            if (unitConditionChart) unitConditionChart.destroy();
+            if (unitBudgetChart) unitBudgetChart.destroy();
+
+            const ctxPriority = document.getElementById('unit-priority-chart').getContext('2d');
+            const totalU = r + y + g + br + bl;
+
+            unitPriorityChart = new Chart(ctxPriority, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🔴 URGENT', '🟡 IMPORTANT', '🟢 DONE', '🟤 NOT URGENT, BUT IMPORTANT', '🔵 BIRU / FOLLOW UP'],
+                    datasets: [{
+                        data: [r, y, g, br, bl],
+                        backgroundColor: ['#E11D48', '#D97706', '#059669', '#B8860B', '#2563EB'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: 10 },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 9.5 }, color: '#334155' } },
+                        datalabels: {
+                            color: '#ffffff', font: { weight: 'bold', size: 10 },
+                            formatter: function(val) {
+                                if (val === 0 || totalU === 0) return '';
+                                return val + ' (' + Math.round((val / totalU) * 100) + '%)';
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxCondition = document.getElementById('unit-condition-chart').getContext('2d');
+            unitConditionChart = new Chart(ctxCondition, {
+                type: 'bar',
+                data: {
+                    labels: ['Bagus / Berfungsi', 'Rusak / Service'],
+                    datasets: [{
+                        label: 'Jumlah QTY Actual',
+                        data: [bagus, rusak],
+                        backgroundColor: ['#059669', '#D97706'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 25, bottom: 5, left: 5, right: 5 } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'top', color: '#0F172A',
+                            font: { weight: 'bold', size: 11 },
+                            formatter: function(val) {
+                                return val + ' Unit';
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxBudget = document.getElementById('unit-budget-chart').getContext('2d');
+            unitBudgetChart = new Chart(ctxBudget, {
+                type: 'bar',
+                data: {
+                    labels: ['CAPEX', 'OPEX'],
+                    datasets: [{
+                        label: 'Total Biaya (Rp)',
+                        data: [capex, opex],
+                        backgroundColor: ['#2563EB', '#0F172A'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 25, bottom: 5, left: 5, right: 5 } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(val) {
+                                    if (val >= 1000) return 'Rp ' + Number(val).toLocaleString('id-ID');
+                                    return 'Rp ' + val;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'top', color: '#0F172A',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: function(val) {
+                                return formatRupiahShort(val);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* FUNGSI YANG DIKEMBANGKAN UNTUK DOWNLOAD PDF SEMUA TAB/HALAMAN SEKALIGUS */
+        function executePDFDownloadDirect() {
+            // Render summary dan kesimpulan
+            renderSummaryDashboard();
+            renderConclusionView();
+
+            // Bangun tampilan seluruh unit ke dalam container khusus PDF
+            const container = document.getElementById('all-units-pdf-container');
+            container.innerHTML = '';
+            
+            const unitNames = Object.keys(dataset);
+            unitNames.forEach(uName => {
+                const items = dataset[uName] || [];
+                let uTotalQty = 0, uCost = 0;
+                
+                let rowsHtml = items.map((it, idx) => {
+                    const iQty = parseInt(it.qty) || 1;
+                    const iBiaya = (parseFloat(it.biaya) || 0) * iQty;
+                    uTotalQty += iQty;
+                    uCost += iBiaya;
+                    const isRusak = it.kondisi && it.kondisi.includes('Rusak');
+
+                    return `
+                        <tr class="border-b border-slate-100 text-xs">
+                            <td class="py-2 px-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                            <td class="py-2 px-3 font-semibold text-slate-800">${it.nama || '-'}</td>
+                            <td class="py-2 px-3 text-slate-600 spec-field">${it.identitas || '-'}</td>
+                            <td class="py-2 px-2 text-center font-bold text-slate-900">${iQty}</td>
+                            <td class="py-2 px-2 text-center font-bold ${isRusak ? 'text-amber-600' : 'text-emerald-600'}">${it.kondisi || 'Bagus'}</td>
+                            <td class="py-2 px-2 text-center text-slate-600 status-field">${it.status || 'Terpakai'}</td>
+                            <td class="py-2 px-3 text-center">${getPriorityBadge(it.urgency)}</td>
+                            <td class="py-2 px-3 text-slate-700">${it.action || 'Servis & Pemeliharaan Rutin'}</td>
+                            <td class="py-2 px-3 text-right font-bold text-emerald-600 financial-field financial-val">Rp ${iBiaya.toLocaleString('id-ID')}</td>
+                            <td class="py-2 px-2 text-center font-bold text-slate-600 financial-field">${it.alokasi || 'OPEX'}</td>
+                            <td class="py-2 px-2 text-center text-slate-400 text-[10px]">${it.tanggal || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const unitBlock = document.createElement('div');
+                unitBlock.className = 'unit-page-break space-y-4';
+                unitBlock.innerHTML = `
+                    <div class="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open text-amber-400"></i>
+                            <h3 class="text-base font-bold uppercase tracking-wide">${uName}</h3>
+                        </div>
+                        <span class="text-xs bg-slate-800 text-slate-300 font-bold px-3 py-1 rounded-lg">Total QTY: ${uTotalQty} Unit | Total Biaya: Rp ${uCost.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div class="bg-clean-card overflow-hidden">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="py-2 px-2 w-10 text-center">No</th>
+                                    <th class="py-2 px-3">Nama Aset</th>
+                                    <th class="py-2 px-3 spec-field">Spesifikasi / Merek</th>
+                                    <th class="py-2 px-2 text-center">QTY</th>
+                                    <th class="py-2 px-2 text-center">Kondisi</th>
+                                    <th class="py-2 px-2 text-center status-field">Status</th>
+                                    <th class="py-2 px-3 text-center">Prioritas</th>
+                                    <th class="py-2 px-3">Rekomendasi Action Plan</th>
+                                    <th class="py-2 px-3 text-right financial-field">Total Biaya</th>
+                                    <th class="py-2 px-2 text-center financial-field">Alokasi</th>
+                                    <th class="py-2 px-2 text-center">Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(unitBlock);
+            });
+
+            // Aktifkan mode cetak penuh PDF
+            document.body.classList.add('print-all-mode');
+            document.getElementById('view-summary').classList.remove('hidden');
+            document.getElementById('view-conclusion').classList.remove('hidden');
+            document.getElementById('view-unit').classList.add('hidden'); // Sembunyikan tab unit individual tunggal
+            container.classList.remove('hidden'); // Tampilkan container seluruh unit
+
+            // Beri jeda kecil agar DOM memperbarui tampilan lalu panggil dialog cetak
+            setTimeout(() => {
+                window.print();
+                
+                // Kembalikan ke keadaan semula setelah dialog cetak ditutup
+                document.body.classList.remove('print-all-mode');
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                
+                switchTab(currentActiveTab);
+            }, 400);
+        }
+
+        function openAddItemModal() {
+            document.getElementById('modal-item-title').textContent = "Tambah Item Aset (" + currentActiveTab + ")";
+            document.getElementById('form-item-index').value = "-1";
+            document.getElementById('item-form').reset();
+            document.getElementById('form-action-preset').value = "";
+            document.getElementById('form-tanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-item').classList.remove('hidden');
+        }
+
+        function openEditItemModal(index) {
+            const item = dataset[currentActiveTab][index];
+            if (!item) return;
+
+            document.getElementById('modal-item-title').textContent = "Edit Item Aset & Action Plan";
+            document.getElementById('form-item-index').value = index;
+            document.getElementById('form-nama').value = item.nama || '';
+            document.getElementById('form-identitas').value = item.identitas || '';
+            document.getElementById('form-action').value = item.action || '';
+            document.getElementById('form-action-preset').value = "";
+            document.getElementById('form-qty').value = item.qty || 1;
+            document.getElementById('form-kondisi').value = item.kondisi || 'Bagus';
+            document.getElementById('form-status').value = item.status || 'Terpakai';
+            document.getElementById('form-urgency').value = item.urgency || 'URGENT';
+            document.getElementById('form-biaya').value = item.biaya || 0;
+            document.getElementById('form-alokasi').value = item.alokasi || 'OPEX';
+            document.getElementById('form-tanggal').value = item.tanggal || new Date().toISOString().split('T')[0];
+
+            document.getElementById('modal-item').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('modal-item').classList.add('hidden');
+        }
+
+        function saveItemModal(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('form-item-index').value);
+
+            const newItem = {
+                nama: document.getElementById('form-nama').value,
+                identitas: document.getElementById('form-identitas').value,
+                action: document.getElementById('form-action').value || 'Servis & Pemeliharaan Rutin',
+                qty: parseInt(document.getElementById('form-qty').value) || 1,
+                kondisi: document.getElementById('form-kondisi').value,
+                status: document.getElementById('form-status').value,
+                urgency: document.getElementById('form-urgency').value,
+                biaya: parseFloat(document.getElementById('form-biaya').value) || 0,
+                alokasi: document.getElementById('form-alokasi').value,
+                tanggal: document.getElementById('form-tanggal').value
+            };
+
+            saveStateToHistory();
+            if (index === -1) dataset[currentActiveTab].push(newItem);
+            else dataset[currentActiveTab][index] = newItem;
+
+            closeItemModal();
+            refreshUI();
+        }
+
+        function deleteItem(index) {
+            if (confirm("Apakah Anda yakin ingin menghapus item ini?")) {
+                saveStateToHistory();
+                dataset[currentActiveTab].splice(index, 1);
+                refreshUI();
+            }
+        }
+
+        function openAddUnitModal() {
+            document.getElementById('modal-unit-title').textContent = "Tambah Unit Property Baru";
+            document.getElementById('form-old-unit-name').value = "";
+            document.getElementById('unit-form').reset();
+            document.getElementById('modal-unit').classList.remove('hidden');
+        }
+
+        function openEditUnitModal(unitName) {
+            document.getElementById('modal-unit-title').textContent = "Edit Nama Unit";
+            document.getElementById('form-old-unit-name').value = unitName;
+            document.getElementById('form-unit-name').value = unitName;
+            document.getElementById('modal-unit').classList.remove('hidden');
+        }
+
+        function closeUnitModal() {
+            document.getElementById('modal-unit').classList.add('hidden');
+        }
+
+        function saveUnitModal(e) {
+            e.preventDefault();
+            const newName = document.getElementById('form-unit-name').value.trim();
+            const oldName = document.getElementById('form-old-unit-name').value.trim();
+
+            if (!newName) return;
+            saveStateToHistory();
+
+            if (oldName) {
+                if (oldName !== newName) {
+                    dataset[newName] = dataset[oldName];
+                    delete dataset[oldName];
+                    if (currentActiveTab === oldName) currentActiveTab = newName;
+                }
+            } else {
+                if (!dataset[newName]) dataset[newName] = [];
+            }
+
+            closeUnitModal();
+            refreshUI();
+        }
+
+        function deleteUnit(unitName) {
+            if (confirm(`Apakah Anda yakin ingin menghapus seluruh unit "${unitName}" dan aset di dalamnya?`)) {
+                saveStateToHistory();
+                delete dataset[unitName];
+                if (currentActiveTab === unitName) currentActiveTab = 'summary';
+                refreshUI();
+            }
+        }
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+
+            Object.keys(dataset).forEach(unitName => {
+                const items = dataset[unitName];
+                const rows = items.map((it, idx) => ({
+                    'No': idx + 1,
+                    'Nama Aset': it.nama,
+                    'Spesifikasi / Identitas': it.identitas,
+                    'Rekomendasi / Action Plan': it.action || '-',
+                    'Jumlah (QTY Actual)': it.qty,
+                    'Kondisi': it.kondisi,
+                    'Status': it.status,
+                    'Matriks Prioritas': it.urgency,
+                    'Estimasi Biaya Satuan (Rp)': it.biaya,
+                    'Estimasi Biaya Total (Rp)': (it.biaya || 0) * (it.qty || 1),
+                    'Alokasi Budget': it.alokasi,
+                    'Tanggal Audit': it.tanggal
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(rows);
+                XLSX.utils.book_append_sheet(wb, ws, unitName.substring(0, 31));
+            });
+
+            XLSX.writeFile(wb, `Audit_Aset_Property_Agranusa_2026.xlsx`);
+        }
+
+        function importExcel(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                saveStateToHistory();
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    if (jsonRows.length > 0) {
+                        const cleanUnitName = sheetName.trim();
+                        if (!dataset[cleanUnitName]) dataset[cleanUnitName] = [];
+
+                        jsonRows.forEach((r) => {
+                            dataset[cleanUnitName].push({
+                                nama: r['Nama Aset'] || r['Nama'] || r['Equipment'] || 'Item Import',
+                                identitas: r['Spesifikasi / Identitas'] || r['Identitas'] || r['Merek'] || '',
+                                action: r['Rekomendasi / Action Plan'] || r['Action Plan'] || r['Rekomendasi'] || 'Servis Rutin & Maintenance',
+                                qty: parseInt(r['Jumlah (QTY Actual)'] || r['Jumlah (Qty)'] || r['Qty'] || 1),
+                                kondisi: r['Kondisi'] || 'Bagus',
+                                status: r['Status'] || 'Terpakai',
+                                urgency: r['Matriks Prioritas'] || r['Urgency'] || 'URGENT',
+                                biaya: parseFloat(r['Estimasi Biaya Satuan (Rp)'] || r['Estimasi Biaya (Rp)'] || r['Biaya'] || 0),
+                                alokasi: r['Alokasi Budget'] || r['Alokasi'] || 'OPEX',
+                                tanggal: r['Tanggal Audit'] || new Date().toISOString().split('T')[0]
+                            });
+                        });
+                    }
+                });
+
+                alert("Data Excel berhasil diimport!");
+                refreshUI();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function importWord(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                mammoth.extractRawText({ arrayBuffer: evt.target.result })
+                    .then(function(result) {
+                        alert("Dokumen Word berhasil dibaca! Ringkasan teks:\n" + result.value.substring(0, 200) + "...");
+                    })
+                    .catch(function(err) {
+                        alert("Gagal membaca file Word: " + err);
+                    });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
