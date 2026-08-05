@@ -1420,6 +1420,51 @@
                 XLSX.utils.book_append_sheet(wb, ws, unitName.substring(0, 31));
             });
             XLSX.writeFile(wb, `Audit_Aset_632_Data_Danapati_2026.xlsx`);
+           // Fungsi untuk membaca file Excel langsung dari GitHub saat web dimuat
+async function loadDataFromGitHubExcel() {
+    try {
+        // Panggil file Excel yang berada di satu folder repository
+        const response = await fetch('data-audit.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // Baca file Excel menggunakan SheetJS
+        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+        
+        const importedDataset = {};
+        
+        // Looping setiap sheet di dalam file Excel
+        workbook.SheetNames.forEach(sheetName => {
+            const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            if (jsonRows.length > 0) {
+                importedDataset[sheetName] = jsonRows.map((r, idx) => ({
+                    no: idx + 1,
+                    nama: r['Nama Aset'] || r['Nama'] || 'Item',
+                    identitas: r['Spesifikasi / Identitas'] || '-',
+                    action: r['Rekomendasi / Action Plan'] || 'Servis Rutin',
+                    qty: parseInt(r['Jumlah (QTY Actual)'] || 1),
+                    kondisi: r['Kondisi'] || 'Bagus',
+                    status: r['Status'] || 'Terpakai',
+                    urgency: r['Matriks Prioritas'] || 'DONE',
+                    biaya: parseFloat(r['Estimasi Biaya Satuan (Rp)'] || 0),
+                    alokasi: r['Alokasi Budget'] || 'OPEX',
+                    tanggal: r['Tanggal Audit'] || new Date().toISOString().split('T')[0]
+                }));
+            }
+        });
+
+        // Masukkan data hasil baca Excel ke variabel utama aplikasi
+        dataset = importedDataset;
+        refreshUI();
+        console.log("Data berhasil dimuat otomatis dari data-audit.xlsx");
+    } catch (error) {
+        console.error("Gagal membaca file Excel dari GitHub:", error);
+    }
+}
+
+// Jalankan otomatis saat halaman selesai dimuat
+document.addEventListener('DOMContentLoaded', () => {
+    loadDataFromGitHubExcel();
+}); 
         }
     </script>
 </body>
